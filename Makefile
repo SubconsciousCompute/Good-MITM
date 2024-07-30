@@ -22,7 +22,7 @@ fmt:
 	cargo fmt --all
 
 fix:
-	cargo fix
+	cargo clippy --fix --allow-dirty --allow-staged
 
 check:
 	cargo check

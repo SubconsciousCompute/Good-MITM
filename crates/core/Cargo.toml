@@ -21,6 +21,7 @@ hyper = { version = "0.14", features = [
   "tcp",
   "runtime",
 ] }
+anyhow.workspace = true
 hyper-proxy = { version = "0.9" }
 hyper-rustls = { version = "0.24" }
 hyper-tls = { version = "0.5", optional = true }

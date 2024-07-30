@@ -164,7 +164,9 @@ where
 
                 match hyper::upgrade::on(req).await {
                     Ok(upgraded) => {
-                        self.serve_tls(upgraded).await;
+                        if let Err(e) = self.serve_tls(upgraded).await {
+                            info!("Failed to serve TLS: {e}");
+                        }
                     }
                     Err(e) => debug!("upgrade error for {}: {}", authority, e),
                 };
@@ -182,7 +184,7 @@ where
     pub async fn serve_tls<IO: AsyncRead + AsyncWrite + Unpin + Send + 'static>(
         self,
         mut stream: IO,
-    ) {
+    ) -> anyhow::Result<()> {
         // Read SNI hostname.
         let mut recording_reader = RecordingBufReader::new(&mut stream);
         let reader = HandshakeRecordReader::new(&mut recording_reader);
@@ -191,9 +193,7 @@ where
             Duration::from_secs(5),
             read_sni_host_name_from_client_hello(reader),
         )
-        .await
-        .unwrap()
-        .unwrap();
+        .await??;
 
         let read_buf = recording_reader.buf();
         let client_stream = PrefixedReaderWriter::new(stream, read_buf);
@@ -201,7 +201,7 @@ where
         if !self.mitm_filter.filter(&sni_hostname).await {
             let remote_addr = format!("{sni_hostname}:443");
             tokio::task::spawn(async move { tunnel(client_stream, remote_addr).await });
-            return;
+            return Ok(());
         }
 
         let server_config = self.ca.clone().gen_server_config();
@@ -223,9 +223,10 @@ where
                         debug!("res:: {}", e);
                     }
                 }
+                Ok(())
             }
             Err(err) => {
-                error!("Tls accept failed: {err}")
+                anyhow::bail!("Tls accept failed: {err}")
             }
         }
     }

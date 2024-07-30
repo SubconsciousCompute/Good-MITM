@@ -74,7 +74,9 @@ where
                     if tcp_stream.peek(&mut tls_content_type).await.is_ok() {
                         if tls_content_type[0] <= 0x40 {
                             // ASCII < 'A', assuming tls
-                            mitm_proxy.serve_tls(tcp_stream).await;
+                            if let Err(e) = mitm_proxy.serve_tls(tcp_stream).await {
+                                log::info!("Failed to serve tls: {e}");
+                            }
                         } else {
                             // assuming http
                             _ = mitm_proxy.serve_stream(tcp_stream).await;
