@@ -267,6 +267,7 @@ pub async fn read_sni_host_name_from_client_hello<R: AsyncRead>(
     // Handshake message type.
     const HANDSHAKE_TYPE_CLIENT_HELLO: u8 = 1;
     let typ = reader.read_u8().await?;
+    log::trace!("typ={typ}");
     if typ != HANDSHAKE_TYPE_CLIENT_HELLO {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -279,6 +280,7 @@ pub async fn read_sni_host_name_from_client_hello<R: AsyncRead>(
 
     // Handshake message length.
     let len = read_u24(reader.as_mut()).await?;
+    log::trace!("handshake message length={len}");
     let reader = reader.take(len.into());
     pin!(reader);
 
@@ -292,12 +294,14 @@ pub async fn read_sni_host_name_from_client_hello<R: AsyncRead>(
 
     // Extensions.
     let ext_len = reader.read_u16().await?;
+    log::trace!("Ext len={ext_len}");
     let new_limit = min(reader.limit(), ext_len.into());
     reader.set_limit(new_limit);
     loop {
         // Extension type & length.
         let ext_typ = reader.read_u16().await?;
         let ext_len = reader.read_u16().await?;
+        log::trace!("> Ext type={ext_typ} and len={ext_len}.");
 
         const EXTENSION_TYPE_SNI: u16 = 0;
         if ext_typ != EXTENSION_TYPE_SNI {
@@ -328,6 +332,7 @@ pub async fn read_sni_host_name_from_client_hello<R: AsyncRead>(
             reader.set_limit(new_limit);
             let mut name_buf = vec![0; name_len.into()];
             reader.read_exact(&mut name_buf).await?;
+            log::trace!("server name: {name_buf:?}");
             return String::from_utf8(name_buf)
                 .map_err(|err| io::Error::new(ErrorKind::InvalidData, err));
         }

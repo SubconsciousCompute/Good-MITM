@@ -75,7 +75,7 @@ where
                         if tls_content_type[0] <= 0x40 {
                             // ASCII < 'A', assuming tls
                             if let Err(e) = mitm_proxy.serve_tls(tcp_stream).await {
-                                log::info!("Failed to serve tls: {e}");
+                                log::error!("Error in Proxy::start_proxy. mitm_proxy.serve_tls returned error: {e}");
                             }
                         } else {
                             // assuming http
