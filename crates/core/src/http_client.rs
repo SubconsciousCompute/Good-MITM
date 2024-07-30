@@ -37,7 +37,7 @@ pub fn gen_client(upstream_proxy: Option<UpstreamProxy>) -> Result<HttpClient, E
             let https = {
                 let https_builder = HttpsConnectorBuilder::new()
                     .with_tls_config({
-                        let cert_resolver = Arc::new(TrustAllCertVerifier::default());
+                        let cert_resolver = Arc::new(TrustAllCertVerifier);
                         ClientConfig::builder()
                             .with_safe_defaults()
                             .with_custom_certificate_verifier(cert_resolver)

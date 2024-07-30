@@ -7,9 +7,9 @@ pub enum Error {
     #[error("invalid CA")]
     Tls(#[from] RcgenError),
     #[error("network error")]
-    HyperError(#[from] hyper::Error),
+    Hyper(#[from] hyper::Error),
     #[error("TlsConnector error")]
-    TlsConnectorError(#[from] hyper_tls::native_tls::Error),
+    TlsConnector(#[from] hyper_tls::native_tls::Error),
     #[error("IO error")]
     IO(#[from] io::Error),
     #[error("unable to decode response body")]
