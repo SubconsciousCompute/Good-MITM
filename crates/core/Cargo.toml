@@ -34,6 +34,6 @@ rustls = { version = "0.21", features = ["dangerous_configuration"] }
 rand = "0.8"
 
 [features]
-default = ["h2", "request-native-tls"]
+default = ["h2", "hyper-tls"]
 request-native-tls = ["hyper-tls", "openssl"]
 h2 = ["hyper-rustls/http2"]
